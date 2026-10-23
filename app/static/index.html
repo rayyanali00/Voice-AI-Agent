@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Patient Registration Dashboard</title>
+<style>
+:root{font-family:Inter,system-ui,Arial;color:#182235;background:#f4f6fb}
+body{margin:0}.wrap{max-width:1200px;margin:40px auto;padding:0 20px}
+header{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+h1{margin:0;font-size:28px}.muted{color:#64748b;margin-top:8px}
+.panel{background:white;border:1px solid #e2e8f0;border-radius:14px;padding:20px;margin-top:24px;box-shadow:0 4px 18px #1e293b0a}
+button{border:0;border-radius:8px;background:#233b65;color:white;padding:10px 15px;cursor:pointer}
+input{padding:10px;border:1px solid #cbd5e1;border-radius:8px;min-width:220px}
+.stats{font-size:14px;color:#475569;margin-top:12px}
+.table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;margin-top:12px;font-size:14px}
+th,td{text-align:left;padding:12px;border-bottom:1px solid #e2e8f0;white-space:nowrap}th{background:#f8fafc}
+a{color:#2563eb}.empty{padding:24px;text-align:center;color:#64748b}
+</style></head>
+<body><main class="wrap">
+<header><div><h1>Patient Registration</h1><div class="muted">CareCloud Voice AI · Patient dashboard</div></div><button onclick="loadPatients()">Refresh records</button></header>
+<section class="panel"><strong>Registered patients</strong><div id="stats" class="stats">Loading…</div>
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px"><input id="search" placeholder="Filter by last name"><button onclick="loadPatients()">Search</button><a style="align-self:center" href="/docs">Open API docs ↗</a></div>
+<div class="table-wrap"><table><thead><tr><th>Name</th><th>DOB</th><th>Sex</th><th>Phone</th><th>Email</th><th>Location</th><th>Created (UTC)</th></tr></thead><tbody id="rows"><tr><td colspan="7" class="empty">Loading…</td></tr></tbody></table></div>
+</section></main>
+<script>
+async function loadPatients(){const q=document.getElementById('search').value.trim();const url='/dashboard-data'+(q?'?last_name='+encodeURIComponent(q):'');try{const r=await fetch(url);const j=await r.json();const items=j.data||[];document.getElementById('stats').textContent=items.length+' active patient record(s)';const rows=document.getElementById('rows');if(!items.length){rows.innerHTML='<tr><td colspan="7" class="empty">No patient records yet.</td></tr>';return}rows.innerHTML=items.map(p=>`<tr><td>${esc(p.first_name)} ${esc(p.last_name)}</td><td>${esc(p.date_of_birth)}</td><td>${esc(p.sex)}</td><td>${esc(p.phone_number)}</td><td>${esc(p.email||'—')}</td><td>${esc(p.city)}, ${esc(p.state)}</td><td>${esc((p.created_at||'').replace('T',' ').slice(0,19))}</td></tr>`).join('')}catch(e){document.getElementById('stats').textContent='Could not load records. Check the API server.'}}
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}loadPatients();
+</script></body></html>
